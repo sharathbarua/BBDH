@@ -1,0 +1,7 @@
+{
+  "name": "BBDH - Bangladesh Blood Donation Hub",
+  "description": "A life-saving platform connecting blood donors with patients in need across Bangladesh. Features real-time search, map-based donor tracking, and donation eligibility tracking.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
