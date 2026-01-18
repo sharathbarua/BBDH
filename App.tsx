@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AppTab, Donor } from './types';
 import BottomNav from './components/BottomNav';
@@ -23,7 +22,18 @@ const App: React.FC = () => {
             lng: position.coords.longitude
           });
         },
-        (error) => console.error("Error getting location:", error)
+        (error) => {
+          let readableError = "An unknown error occurred.";
+          if (error.code === error.PERMISSION_DENIED) {
+            readableError = "User denied the request for Geolocation.";
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            readableError = "Location information is unavailable.";
+          } else if (error.code === error.TIMEOUT) {
+            readableError = "The request to get user location timed out.";
+          }
+          console.error("Error getting location:", readableError);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
 
