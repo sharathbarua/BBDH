@@ -15,7 +15,6 @@ const App: React.FC = () => {
   const [showLanding, setShowLanding] = useState<boolean>(true);
 
   useEffect(() => {
-    // Attempt to get user location on mount
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -25,17 +24,12 @@ const App: React.FC = () => {
           });
         },
         (error) => {
-          let readableError = "An unknown error occurred.";
-          if (error.code === 1) readableError = "Permission denied.";
-          else if (error.code === 2) readableError = "Position unavailable.";
-          else if (error.code === 3) readableError = "Timeout.";
-          console.error("Location error:", readableError);
+          console.error("Location error:", error.message);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
 
-    // Try to load user profile from local storage
     const savedProfile = localStorage.getItem('bbdh_profile');
     if (savedProfile) {
       setUserProfile(JSON.parse(savedProfile));
@@ -60,7 +54,6 @@ const App: React.FC = () => {
     localStorage.setItem('bbdh_profile', JSON.stringify(profile));
   };
 
-  // If user is new and hasn't skipped, show landing/login screen first
   if (showLanding && !userProfile) {
     return <Landing onLogin={handleLogin} onSkip={handleSkipLanding} />;
   }
@@ -81,24 +74,24 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white max-w-md mx-auto shadow-2xl relative overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-white max-w-md mx-auto shadow-2xl overflow-hidden h-screen-dynamic">
       {/* Header - Fixed Height */}
-      <header className="bg-red-600 text-white p-4 shadow-md flex justify-between items-center shrink-0 z-10">
+      <header className="bg-red-600 text-white px-4 py-3 shadow-md flex justify-between items-center shrink-0 z-50">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">BBDH</h1>
-          <p className="text-[10px] opacity-80 uppercase tracking-widest">Bhuddist Blood Donation Hub</p>
+          <h1 className="text-xl font-bold tracking-tight leading-tight">BBDH</h1>
+          <p className="text-[9px] opacity-80 uppercase tracking-widest leading-none">Bhuddist Blood Donation Hub</p>
         </div>
-        <div className="bg-white/20 p-2 rounded-full">
-           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <div className="bg-white/20 p-2 rounded-full active:scale-90 transition-transform cursor-pointer">
+           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
         </div>
       </header>
 
-      {/* Main Content Area - Scrollable */}
-      <main className="flex-1 overflow-y-auto">
+      {/* Main Content Area - Scrollable with momentum scroll */}
+      <main className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar bg-gray-50" style={{ WebkitOverflowScrolling: 'touch' }}>
         {renderContent()}
       </main>
 
-      {/* Bottom Navigation - Fixed below Main */}
+      {/* Bottom Navigation - Locked to bottom */}
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );

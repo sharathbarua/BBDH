@@ -1,25 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#dc2626">
     <base href="/">
     <title>BBDH - Bhuddist Blood Donation Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sar: env(safe-area-inset-right);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+        }
         body {
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: contain;
+            overscroll-behavior-y: none;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #root {
+            height: 100%;
+            width: 100%;
         }
         .safe-area-bottom {
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: var(--sab);
         }
-        /* Hide scrollbars for a cleaner mobile feel */
-        ::-webkit-scrollbar {
+        /* Hide scrollbars but allow scrolling */
+        .hide-scrollbar::-webkit-scrollbar {
             display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Dynamic Viewport Height Fix */
+        .h-screen-dynamic {
+            height: 100vh; /* Fallback */
+            height: 100dvh;
         }
     </style>
 <script type="importmap">
@@ -34,7 +57,7 @@
 }
 </script>
 </head>
-<body class="bg-gray-50 text-gray-900 overflow-hidden">
+<body class="bg-gray-50 text-gray-900 overflow-hidden fixed inset-0">
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
 </body>
