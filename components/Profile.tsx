@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Donor, BloodGroup } from '../types';
 import { BLOOD_GROUPS } from '../constants';
 import { LogOut, Save, Camera, Shield, Eye, EyeOff, Calendar, MapPin, Hash, Droplets } from 'lucide-react';
@@ -21,8 +21,20 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
     location: { lat: 23.8103, lng: 90.4125, address: '' }
   });
 
+  // If userProfile changes (e.g., from Landing -> Profile), update form
+  useEffect(() => {
+    if (userProfile) {
+      setFormData(userProfile);
+      setIsEditing(false);
+    }
+  }, [userProfile]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.fullName || !formData.phoneNumber) {
+      alert("Please enter your name and phone number");
+      return;
+    }
     onUpdate({
       ...formData as Donor,
       id: userProfile?.id || Date.now().toString()
@@ -35,24 +47,28 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
       <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 mb-6">
         <div className="bg-gray-50 p-8 flex flex-col items-center border-b border-gray-100 relative">
           <div className="relative group">
-            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-4xl font-black shadow-inner border-4 border-white">
-              {formData.fullName?.[0] || '?'}
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-4xl font-black shadow-inner border-4 border-white overflow-hidden">
+               {formData.fullName?.[0] || '?'}
             </div>
             <button className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-md text-gray-600 border border-gray-100">
               <Camera size={14} />
             </button>
           </div>
-          <h2 className="mt-4 text-xl font-bold text-gray-800">{formData.fullName || 'Complete Profile'}</h2>
-          <p className="text-sm text-gray-500">{formData.phoneNumber || 'Phone not verified'}</p>
+          <h2 className="mt-4 text-xl font-bold text-gray-800 text-center px-4">
+            {formData.fullName || 'Complete Your Profile'}
+          </h2>
+          <p className="text-sm text-gray-500">{formData.phoneNumber || 'Enter your details below'}</p>
           
-          <div className="absolute top-4 right-4">
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-red-600 text-sm font-bold bg-white px-3 py-1 rounded-full shadow-sm"
-            >
-              {isEditing ? 'Cancel' : 'Edit'}
-            </button>
-          </div>
+          {userProfile && (
+            <div className="absolute top-4 right-4">
+              <button 
+                onClick={() => setIsEditing(!isEditing)}
+                className="text-red-600 text-sm font-bold bg-white px-3 py-1 rounded-full shadow-sm"
+              >
+                {isEditing ? 'Cancel' : 'Edit'}
+              </button>
+            </div>
+          )}
         </div>
 
         {isEditing ? (
@@ -66,6 +82,22 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                   value={formData.fullName}
                   onChange={e => setFormData({...formData, fullName: e.target.value})}
                   className="bg-transparent w-full outline-none text-sm"
+                  placeholder="Your full name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Phone Number</label>
+              <div className="flex items-center bg-gray-50 rounded-2xl px-4 py-2 border border-gray-100 focus-within:border-red-300 transition-colors">
+                <Hash className="text-gray-400 mr-3" size={18} />
+                <input 
+                  type="tel" 
+                  value={formData.phoneNumber}
+                  onChange={e => setFormData({...formData, phoneNumber: e.target.value})}
+                  className="bg-transparent w-full outline-none text-sm"
+                  placeholder="017XXXXXXXX"
                   required
                 />
               </div>
@@ -127,17 +159,17 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
               className="w-full bg-red-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center space-x-2 shadow-lg shadow-red-200 active:scale-95 transition-all mt-6"
             >
               <Save size={20} />
-              <span>Save Profile</span>
+              <span>Complete Profile</span>
             </button>
           </form>
         ) : (
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-2xl">
-                <p className="text-[10px] font-bold text-gray-400 uppercase">Donation Count</p>
-                <p className="text-xl font-black text-gray-800">4 Times</p>
+              <div className="bg-gray-50 p-4 rounded-2xl text-center">
+                <p className="text-[10px] font-bold text-gray-400 uppercase">Blood Type</p>
+                <p className="text-2xl font-black text-red-600">{formData.bloodGroup}</p>
               </div>
-              <div className="bg-gray-50 p-4 rounded-2xl">
+              <div className="bg-gray-50 p-4 rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-gray-400 uppercase">Status</p>
                 <p className={`text-xl font-black ${formData.isAvailable ? 'text-green-600' : 'text-gray-400'}`}>
                   {formData.isAvailable ? 'Active' : 'Offline'}
@@ -175,7 +207,11 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                   </div>
                 </div>
                 <div 
-                  onClick={() => setFormData({...formData, isAvailable: !formData.isAvailable})}
+                  onClick={() => {
+                    const newVal = !formData.isAvailable;
+                    setFormData({...formData, isAvailable: newVal});
+                    if (userProfile) onUpdate({...userProfile, isAvailable: newVal});
+                  }}
                   className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${formData.isAvailable ? 'bg-green-500' : 'bg-gray-300'}`}
                 >
                    <div className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform ${formData.isAvailable ? 'translate-x-6' : ''}`}></div>
@@ -184,10 +220,12 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
             </div>
 
             <button 
-              className="w-full text-gray-400 font-bold py-4 flex items-center justify-center space-x-2 border-t border-gray-100"
+              className="w-full text-gray-400 font-bold py-4 flex items-center justify-center space-x-2 border-t border-gray-100 mt-4 active:text-red-600 transition-colors"
               onClick={() => {
-                localStorage.removeItem('bbdh_profile');
-                window.location.reload();
+                if (confirm("Logout and clear your profile data?")) {
+                  localStorage.removeItem('bbdh_profile');
+                  window.location.reload();
+                }
               }}
             >
               <LogOut size={18} />

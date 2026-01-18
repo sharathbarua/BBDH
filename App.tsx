@@ -5,12 +5,14 @@ import Home from './components/Home';
 import Search from './components/Search';
 import MapView from './components/MapView';
 import Profile from './components/Profile';
+import Landing from './components/Landing';
 import { MOCK_DONORS } from './constants';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [userProfile, setUserProfile] = useState<Donor | null>(null);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [showLanding, setShowLanding] = useState<boolean>(true);
 
   useEffect(() => {
     // Attempt to get user location on mount
@@ -24,14 +26,10 @@ const App: React.FC = () => {
         },
         (error) => {
           let readableError = "An unknown error occurred.";
-          if (error.code === error.PERMISSION_DENIED) {
-            readableError = "User denied the request for Geolocation.";
-          } else if (error.code === error.POSITION_UNAVAILABLE) {
-            readableError = "Location information is unavailable.";
-          } else if (error.code === error.TIMEOUT) {
-            readableError = "The request to get user location timed out.";
-          }
-          console.error("Error getting location:", readableError);
+          if (error.code === 1) readableError = "Permission denied.";
+          else if (error.code === 2) readableError = "Position unavailable.";
+          else if (error.code === 3) readableError = "Timeout.";
+          console.error("Location error:", readableError);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
@@ -41,13 +39,26 @@ const App: React.FC = () => {
     const savedProfile = localStorage.getItem('bbdh_profile');
     if (savedProfile) {
       setUserProfile(JSON.parse(savedProfile));
+      setShowLanding(false);
     }
   }, []);
 
   const handleUpdateProfile = (profile: Donor) => {
     setUserProfile(profile);
     localStorage.setItem('bbdh_profile', JSON.stringify(profile));
+    setShowLanding(false);
+    setActiveTab('home');
   };
+
+  const handleSkipLanding = () => {
+    setShowLanding(false);
+    setActiveTab('home');
+  };
+
+  // If user is new and hasn't skipped, show landing/login screen first
+  if (showLanding && !userProfile) {
+    return <Landing onJoin={() => setActiveTab('profile')} onSkip={handleSkipLanding} />;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
