@@ -43,7 +43,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const handleUpdateProfile = (profile: Donor) => {
+  const handleLogin = (profile: Donor) => {
     setUserProfile(profile);
     localStorage.setItem('bbdh_profile', JSON.stringify(profile));
     setShowLanding(false);
@@ -55,9 +55,14 @@ const App: React.FC = () => {
     setActiveTab('home');
   };
 
+  const handleUpdateProfile = (profile: Donor) => {
+    setUserProfile(profile);
+    localStorage.setItem('bbdh_profile', JSON.stringify(profile));
+  };
+
   // If user is new and hasn't skipped, show landing/login screen first
   if (showLanding && !userProfile) {
-    return <Landing onJoin={() => setActiveTab('profile')} onSkip={handleSkipLanding} />;
+    return <Landing onLogin={handleLogin} onSkip={handleSkipLanding} />;
   }
 
   const renderContent = () => {
