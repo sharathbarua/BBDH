@@ -1,6 +1,7 @@
+
 import { BloodGroup, Donor, UrgentRequest } from './types';
 
-// Standard blood groups available in Bangladesh
+// Standard blood groups available in Bhuddist Blood Donation Hub (BBDH)
 export const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−'];
 
 export const DONATION_INTERVAL_DAYS = 120;

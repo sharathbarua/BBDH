@@ -129,7 +129,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
 
       {/* Footer / About */}
       <footer className="pt-6 pb-4 text-center border-t border-gray-100">
-        <p className="text-xs text-gray-400 font-medium">BBDH – Bangladesh Blood Donation Hub</p>
+        <p className="text-xs text-gray-400 font-medium">BBDH – Bhuddist Blood Donation Hub</p>
         <p className="text-[10px] text-gray-400">Created by Sharath Barua</p>
         <p className="text-red-500 text-[10px] mt-1 font-bold italic">“Donate blood, save lives.”</p>
       </footer>
