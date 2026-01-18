@@ -1,37 +1,38 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#dc2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <base href="/">
     <title>BBDH - Bhuddist Blood Donation Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sat: env(safe-area-inset-top);
-            --sar: env(safe-area-inset-right);
-            --sab: env(safe-area-inset-bottom);
-            --sal: env(safe-area-inset-left);
+            --vh: 1vh;
         }
         body {
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none;
-            height: 100%;
-            width: 100%;
+            overscroll-behavior: none;
             margin: 0;
             padding: 0;
+            background-color: #f9fafb;
+            height: calc(var(--vh, 1vh) * 100);
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
         }
         #root {
             height: 100%;
             width: 100%;
         }
-        .safe-area-bottom {
-            padding-bottom: var(--sab);
+        .app-container {
+            height: calc(var(--vh, 1vh) * 100);
         }
-        /* Hide scrollbars but allow scrolling */
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -39,12 +40,17 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* Dynamic Viewport Height Fix */
-        .h-screen-dynamic {
-            height: 100vh; /* Fallback */
-            height: 100dvh;
-        }
     </style>
+    <script>
+        // Update VH variable on resize and orientation change
+        const updateVH = () => {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+        window.addEventListener('resize', updateVH);
+        window.addEventListener('orientationchange', updateVH);
+        updateVH();
+    </script>
 <script type="importmap">
 {
   "imports": {
@@ -57,7 +63,7 @@
 }
 </script>
 </head>
-<body class="bg-gray-50 text-gray-900 overflow-hidden fixed inset-0">
+<body>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
 </body>

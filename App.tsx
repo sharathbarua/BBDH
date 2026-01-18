@@ -74,25 +74,27 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-white max-w-md mx-auto shadow-2xl overflow-hidden h-screen-dynamic">
-      {/* Header - Fixed Height */}
-      <header className="bg-red-600 text-white px-4 py-3 shadow-md flex justify-between items-center shrink-0 z-50">
+    <div className="app-container flex flex-col bg-white max-w-md mx-auto shadow-2xl relative overflow-hidden">
+      {/* Header */}
+      <header className="bg-red-600 text-white px-4 pt-10 pb-4 shadow-lg flex justify-between items-end shrink-0 z-50">
         <div>
-          <h1 className="text-xl font-bold tracking-tight leading-tight">BBDH</h1>
-          <p className="text-[9px] opacity-80 uppercase tracking-widest leading-none">Bhuddist Blood Donation Hub</p>
+          <h1 className="text-2xl font-black tracking-tighter leading-none">BBDH</h1>
+          <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">Bangladesh Blood Hub</p>
         </div>
-        <div className="bg-white/20 p-2 rounded-full active:scale-90 transition-transform cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-        </div>
+        <button className="bg-white/20 p-2.5 rounded-2xl active:scale-90 transition-transform">
+           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </button>
       </header>
 
-      {/* Main Content Area - Scrollable with momentum scroll */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar bg-gray-50" style={{ WebkitOverflowScrolling: 'touch' }}>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar bg-gray-50 relative">
         {renderContent()}
       </main>
 
-      {/* Bottom Navigation - Locked to bottom */}
-      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Navigation */}
+      <div className="shrink-0 bg-white border-t border-gray-100 z-50">
+        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
     </div>
   );
 };
