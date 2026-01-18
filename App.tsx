@@ -82,8 +82,8 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-white max-w-md mx-auto shadow-2xl relative overflow-hidden">
-      {/* Header */}
-      <header className="bg-red-600 text-white p-4 shadow-md flex justify-between items-center shrink-0">
+      {/* Header - Fixed Height */}
+      <header className="bg-red-600 text-white p-4 shadow-md flex justify-between items-center shrink-0 z-10">
         <div>
           <h1 className="text-xl font-bold tracking-tight">BBDH</h1>
           <p className="text-[10px] opacity-80 uppercase tracking-widest">Bhuddist Blood Donation Hub</p>
@@ -93,12 +93,12 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto pb-20">
+      {/* Main Content Area - Scrollable */}
+      <main className="flex-1 overflow-y-auto">
         {renderContent()}
       </main>
 
-      {/* Sticky Bottom Navigation */}
+      {/* Bottom Navigation - Fixed below Main */}
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );

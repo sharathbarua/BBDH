@@ -1,10 +1,15 @@
-
 import React from 'react';
 import { Donor, AppTab } from '../types';
 import { differenceInDays, addDays, format } from 'date-fns';
 import { DONATION_INTERVAL_DAYS, MOCK_URGENT_REQUESTS } from '../constants';
-// Fixed: Added Search and Map to imports
-import { AlertCircle, Phone, Calendar, Droplets, Search, Map } from 'lucide-react';
+import { 
+  AlertCircle, 
+  Phone, 
+  Calendar, 
+  Droplets, 
+  Search as SearchIcon, 
+  Map as MapIcon 
+} from 'lucide-react';
 
 interface HomeProps {
   userProfile: Donor | null;
@@ -29,7 +34,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
   const status = calculateEligibility();
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 pb-6">
       {/* Welcome & Eligibility Card */}
       <section>
         <div className="bg-gradient-to-br from-red-600 to-red-500 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -64,7 +69,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
               )}
             </div>
           </div>
-          {/* Decorative blood drop icon bg */}
           <Droplets size={120} className="absolute -bottom-10 -right-5 opacity-10 text-white rotate-12" />
         </div>
       </section>
@@ -76,7 +80,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
             <AlertCircle className="text-red-600" size={20} />
             Urgent Requests
           </h3>
-          <button className="text-red-600 text-sm font-medium">View All</button>
+          <button type="button" className="text-red-600 text-sm font-bold active:opacity-60 cursor-pointer">View All</button>
         </div>
 
         <div className="space-y-4">
@@ -94,8 +98,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
               <p className="text-xs text-gray-600 mb-4 line-clamp-2 italic">"{request.message}"</p>
               <div className="flex gap-2">
                 <button 
+                  type="button"
                   onClick={() => window.location.href = `tel:${request.contactNumber}`}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm transition-all"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition-all active:scale-95 shadow-md shadow-red-100 cursor-pointer"
                 >
                   <Phone size={16} /> Contact Now
                 </button>
@@ -108,30 +113,31 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
       {/* Quick Actions */}
       <section className="grid grid-cols-2 gap-4">
         <button 
+          type="button"
           onClick={() => onTabChange('search')}
-          className="bg-white border border-gray-100 p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 shadow-sm active:scale-95 transition-transform"
+          className="bg-white border border-gray-100 p-5 rounded-2xl flex flex-col items-center justify-center space-y-2 shadow-sm active:bg-gray-50 active:scale-95 transition-all cursor-pointer"
         >
           <div className="bg-red-100 p-3 rounded-full text-red-600">
-            <Search size={24} />
+            <SearchIcon size={24} />
           </div>
-          <span className="text-sm font-semibold text-gray-700">Find Donor</span>
+          <span className="text-sm font-bold text-gray-700">Find Donor</span>
         </button>
         <button 
+          type="button"
           onClick={() => onTabChange('map')}
-          className="bg-white border border-gray-100 p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 shadow-sm active:scale-95 transition-transform"
+          className="bg-white border border-gray-100 p-5 rounded-2xl flex flex-col items-center justify-center space-y-2 shadow-sm active:bg-gray-50 active:scale-95 transition-all cursor-pointer"
         >
           <div className="bg-blue-100 p-3 rounded-full text-blue-600">
-            <Map size={24} />
+            <MapIcon size={24} />
           </div>
-          <span className="text-sm font-semibold text-gray-700">Live Map</span>
+          <span className="text-sm font-bold text-gray-700">Live Map</span>
         </button>
       </section>
 
-      {/* Footer / About */}
+      {/* Footer */}
       <footer className="pt-6 pb-4 text-center border-t border-gray-100">
-        <p className="text-xs text-gray-400 font-medium">BBDH – Bhuddist Blood Donation Hub</p>
-        <p className="text-[10px] text-gray-400">Created by Sharath Barua</p>
-        <p className="text-red-500 text-[10px] mt-1 font-bold italic">“Donate blood, save lives.”</p>
+        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">BBDH – Blood Donation Hub</p>
+        <p className="text-[10px] text-gray-400 mt-1">Safe • Reliable • Direct</p>
       </footer>
     </div>
   );
