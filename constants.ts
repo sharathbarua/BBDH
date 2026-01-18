@@ -1,12 +1,8 @@
-
 import { BloodGroup, Donor, UrgentRequest } from './types';
 
-// Standard blood groups available in Bhuddist Blood Donation Hub (BBDH)
 export const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A−', 'B+', 'B−', 'O+', 'O−', 'AB+', 'AB−'];
-
 export const DONATION_INTERVAL_DAYS = 120;
-
-export const DEFAULT_CENTER = { lat: 23.8103, lng: 90.4125 }; // Dhaka, Bangladesh
+export const DEFAULT_CENTER = { lat: 23.8103, lng: 90.4125 };
 
 export const MOCK_DONORS: Donor[] = [
   {
@@ -39,8 +35,43 @@ export const MOCK_DONORS: Donor[] = [
     age: 32,
     location: { lat: 23.8817, lng: 90.3994, address: 'Uttara, Dhaka' },
     lastDonationDate: '2023-05-10',
-    isAvailable: false,
+    isAvailable: true,
     hidePhone: true,
+  },
+  {
+    id: '4',
+    fullName: 'Nusrat Jahan',
+    phoneNumber: '01611223355',
+    bloodGroup: 'AB+',
+    age: 26,
+    location: { lat: 23.7231, lng: 90.4102, address: 'Old Dhaka' },
+    lastDonationDate: null,
+    isAvailable: true,
+    hidePhone: false,
+  },
+  {
+    id: '5',
+    fullName: 'Kamal Ahmed',
+    phoneNumber: '01511223366',
+    /* Fixed typo: replaced hyphen with correct minus sign character (U+2212) */
+    bloodGroup: 'O−',
+    age: 35,
+    location: { lat: 23.7771, lng: 90.4244, address: 'Badda, Dhaka' },
+    lastDonationDate: '2024-02-05',
+    isAvailable: true,
+    hidePhone: false,
+  },
+  {
+    id: '6',
+    fullName: 'Laila Karim',
+    phoneNumber: '01311223377',
+    /* Fixed typo: replaced hyphen with correct minus sign character (U+2212) */
+    bloodGroup: 'B−',
+    age: 29,
+    location: { lat: 23.7461, lng: 90.3742, address: 'Mohammadpur, Dhaka' },
+    lastDonationDate: '2023-11-20',
+    isAvailable: true,
+    hidePhone: false,
   }
 ];
 

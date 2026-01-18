@@ -11,10 +11,12 @@ import { MOCK_DONORS } from './constants';
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [userProfile, setUserProfile] = useState<Donor | null>(null);
+  const [donors, setDonors] = useState<Donor[]>(MOCK_DONORS);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [showLanding, setShowLanding] = useState<boolean>(true);
 
   useEffect(() => {
+    // Get initial geolocation
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -23,22 +25,30 @@ const App: React.FC = () => {
             lng: position.coords.longitude
           });
         },
-        (error) => {
-          console.error("Location error:", error.message);
-        },
+        (error) => console.error("Location error:", error.message),
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
 
+    // Load saved session
     const savedProfile = localStorage.getItem('bbdh_profile');
     if (savedProfile) {
-      setUserProfile(JSON.parse(savedProfile));
+      const parsed = JSON.parse(savedProfile);
+      setUserProfile(parsed);
       setShowLanding(false);
+      // Add the user to the donors list if not already present
+      setDonors(prev => {
+        if (!prev.find(d => d.id === parsed.id)) {
+          return [parsed, ...prev];
+        }
+        return prev;
+      });
     }
   }, []);
 
   const handleLogin = (profile: Donor) => {
     setUserProfile(profile);
+    setDonors(prev => [profile, ...prev]);
     localStorage.setItem('bbdh_profile', JSON.stringify(profile));
     setShowLanding(false);
     setActiveTab('home');
@@ -51,6 +61,7 @@ const App: React.FC = () => {
 
   const handleUpdateProfile = (profile: Donor) => {
     setUserProfile(profile);
+    setDonors(prev => prev.map(d => d.id === profile.id ? profile : d));
     localStorage.setItem('bbdh_profile', JSON.stringify(profile));
   };
 
@@ -63,9 +74,9 @@ const App: React.FC = () => {
       case 'home':
         return <Home userProfile={userProfile} onTabChange={setActiveTab} />;
       case 'search':
-        return <Search userLocation={userLocation} />;
+        return <Search donors={donors} userLocation={userLocation} />;
       case 'map':
-        return <MapView donors={MOCK_DONORS} userLocation={userLocation} />;
+        return <MapView donors={donors} userLocation={userLocation} />;
       case 'profile':
         return <Profile userProfile={userProfile} onUpdate={handleUpdateProfile} />;
       default:
@@ -75,11 +86,11 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container flex flex-col bg-white max-w-md mx-auto shadow-2xl relative overflow-hidden">
-      {/* Header */}
-      <header className="bg-red-600 text-white px-4 pt-10 pb-4 shadow-lg flex justify-between items-end shrink-0 z-50">
+      {/* Header with notch padding */}
+      <header className="bg-red-600 text-white px-5 pt-12 pb-5 shadow-lg flex justify-between items-end shrink-0 z-[60]">
         <div>
           <h1 className="text-2xl font-black tracking-tighter leading-none">BBDH</h1>
-          <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">Bangladesh Blood Hub</p>
+          <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">Bangladesh Blood Donation Hub</p>
         </div>
         <button className="bg-white/20 p-2.5 rounded-2xl active:scale-90 transition-transform">
            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
@@ -91,8 +102,8 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
 
-      {/* Navigation */}
-      <div className="shrink-0 bg-white border-t border-gray-100 z-50">
+      {/* Navigation - Guaranteed visible at bottom */}
+      <div className="shrink-0 bg-white border-t border-gray-100 z-[60]">
         <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
     </div>
