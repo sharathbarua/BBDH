@@ -15,18 +15,42 @@ const App: React.FC = () => {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [showLanding, setShowLanding] = useState<boolean>(true);
 
-  // Memoized update function to avoid re-render loops
-  const handleUpdateProfile = useCallback((profile: Donor) => {
-    setUserProfile(profile);
+  // Unified donor list update logic
+  const syncDonors = useCallback((profile: Donor | null) => {
     setDonors(prev => {
-      const others = prev.filter(d => d.id !== profile.id);
-      return [profile, ...others];
+      // Start with the base mock donors
+      let baseList = [...MOCK_DONORS];
+      if (!profile) return baseList;
+      
+      // Filter out mock entry if it has the same ID (unlikely) or replace current user
+      const filtered = baseList.filter(d => d.id !== profile.id);
+      return [profile, ...filtered];
     });
-    localStorage.setItem('bbdh_profile', JSON.stringify(profile));
   }, []);
 
+  const handleUpdateProfile = useCallback((profile: Donor) => {
+    setUserProfile(profile);
+    localStorage.setItem('bbdh_profile', JSON.stringify(profile));
+    syncDonors(profile);
+  }, [syncDonors]);
+
   useEffect(() => {
-    // Get initial geolocation
+    // 1. Load saved session first
+    const savedProfileStr = localStorage.getItem('bbdh_profile');
+    let currentProfile: Donor | null = null;
+    
+    if (savedProfileStr) {
+      try {
+        currentProfile = JSON.parse(savedProfileStr);
+        setUserProfile(currentProfile);
+        setShowLanding(false);
+        syncDonors(currentProfile);
+      } catch (e) {
+        console.error("Failed to parse saved profile");
+      }
+    }
+
+    // 2. Get geolocation and sync
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -36,40 +60,17 @@ const App: React.FC = () => {
           };
           setUserLocation(loc);
           
-          // Sync existing profile with new high-accuracy location
-          setUserProfile(prev => {
-            if (prev && prev.location.lat === 23.8103) {
-                const updatedProfile = { ...prev, location: { ...prev.location, ...loc } };
-                // Also update global list and storage
-                setDonors(dPrev => {
-                  const others = dPrev.filter(d => d.id !== updatedProfile.id);
-                  return [updatedProfile, ...others];
-                });
-                localStorage.setItem('bbdh_profile', JSON.stringify(updatedProfile));
-                return updatedProfile;
-            }
-            return prev;
-          });
+          // Update profile with location if it's the default one
+          if (currentProfile && currentProfile.location.lat === 23.8103) {
+            const updated = { ...currentProfile, location: { ...currentProfile.location, ...loc } };
+            handleUpdateProfile(updated);
+          }
         },
         (error) => console.error("Location error:", error.message),
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
-
-    // Load saved session
-    const savedProfile = localStorage.getItem('bbdh_profile');
-    if (savedProfile) {
-      const parsed = JSON.parse(savedProfile);
-      setUserProfile(parsed);
-      setShowLanding(false);
-      
-      // Upsert the user to the donors list
-      setDonors(prev => {
-        const others = prev.filter(d => d.id !== parsed.id);
-        return [parsed, ...others];
-      });
-    }
-  }, []);
+  }, [handleUpdateProfile, syncDonors]);
 
   const handleLogin = (profile: Donor) => {
     handleUpdateProfile(profile);
@@ -103,7 +104,6 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container flex flex-col bg-white max-w-md mx-auto shadow-2xl relative overflow-hidden">
-      {/* Header with notch padding */}
       <header className="bg-red-600 text-white px-5 pt-12 pb-5 shadow-lg flex justify-between items-end shrink-0 z-[60]">
         <div>
           <h1 className="text-2xl font-black tracking-tighter leading-none">BBDH</h1>
@@ -114,12 +114,10 @@ const App: React.FC = () => {
         </button>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar bg-gray-50 relative">
         {renderContent()}
       </main>
 
-      {/* Navigation - Guaranteed visible at bottom */}
       <div className="shrink-0 bg-white border-t border-gray-100 z-[60]">
         <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { BloodGroup, Donor } from '../types';
 import { BLOOD_GROUPS, DONATION_INTERVAL_DAYS } from '../constants';
 import { differenceInDays, addDays, format } from 'date-fns';
-import { Phone, MapPin, User, ChevronRight, X, Calendar, ShieldCheck, FilterX, Zap } from 'lucide-react';
+import { Phone, MapPin, ChevronRight, X, Calendar, ShieldCheck, FilterX, Zap } from 'lucide-react';
 
 interface SearchProps {
   donors: Donor[];
@@ -48,7 +48,6 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation, currentUser }) =>
       );
     }
 
-    // Sort by distance if location is available, otherwise by name
     return result.sort((a, b) => {
         if (a.distance !== null && b.distance !== null) {
             return a.distance - b.distance;
@@ -123,18 +122,21 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation, currentUser }) =>
                   )}
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                        <h4 className="font-bold text-gray-800 truncate">{donor.fullName}</h4>
+                <div className="flex-1 min-w-0 pr-2">
+                  <div className="flex justify-between items-center gap-2 mb-0.5">
+                    <div className="flex items-center gap-1.5 overflow-hidden">
+                        <h4 className="font-bold text-gray-800 text-[15px] truncate max-w-[140px] sm:max-w-none">
+                          {donor.fullName || 'Anonymous Donor'}
+                        </h4>
                         {isMe && <span className="text-[8px] bg-red-600 text-white px-1.5 py-0.5 rounded-md font-black shrink-0">YOU</span>}
                     </div>
-                    <span className="text-[10px] text-red-600 font-black shrink-0 bg-red-50 px-2 py-0.5 rounded-full">
+                    <span className="text-[9px] text-red-600 font-black shrink-0 bg-red-50 px-2 py-0.5 rounded-full border border-red-100/50">
                       {donor.distance !== null ? `${donor.distance.toFixed(1)} KM` : 'LOC OFF'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
-                    <MapPin size={10} className="text-red-300" /> {donor.location.address || 'Unknown Location'}
+                  <p className="text-[11px] text-gray-500 flex items-center gap-1">
+                    <MapPin size={10} className="text-red-300 shrink-0" /> 
+                    <span className="truncate">{donor.location.address || 'Unknown Area'}</span>
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className={`text-[9px] font-black px-2 py-0.5 rounded-md tracking-tighter ${available ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -165,7 +167,6 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation, currentUser }) =>
         )}
       </div>
 
-      {/* Donor Details Bottom Sheet */}
       {activeDonor && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center px-0 pb-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div onClick={() => setActiveDonor(null)} className="absolute inset-0"></div>
@@ -184,7 +185,7 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation, currentUser }) =>
                  {activeDonor.bloodGroup}
                </div>
                <div className="flex items-center gap-2 mb-1">
-                 <h2 className="text-2xl font-black text-gray-800">{activeDonor.fullName}</h2>
+                 <h2 className="text-2xl font-black text-gray-800">{activeDonor.fullName || 'Anonymous Donor'}</h2>
                  {currentUser?.id === activeDonor.id && <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-black">YOU</span>}
                </div>
                <p className="text-sm font-medium text-gray-400 flex items-center gap-1">
@@ -194,7 +195,7 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation, currentUser }) =>
                <div className="grid grid-cols-2 gap-4 w-full mt-8">
                   <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100 text-left">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Age</p>
-                    <p className="text-lg font-black text-gray-800">{activeDonor.age} Years</p>
+                    <p className="text-lg font-black text-gray-800">{activeDonor.age || '--'} Years</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100 text-left">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Eligible</p>
@@ -225,7 +226,7 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation, currentUser }) =>
                     return;
                   }
                   if(!activeDonor.hidePhone) window.location.href = `tel:${activeDonor.phoneNumber}`;
-                  else alert("This donor has hidden their contact info. Use official request system.");
+                  else alert("This donor has hidden their contact info.");
                 }}
                 className="w-full bg-red-600 text-white py-5 rounded-[28px] font-black flex items-center justify-center gap-3 text-lg mt-8 shadow-2xl shadow-red-200 active:scale-95 transition-all"
                >
