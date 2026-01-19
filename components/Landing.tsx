@@ -157,22 +157,25 @@ const Landing: React.FC<LandingProps> = ({ onLogin, onSkip }) => {
       </div>
 
       {/* Footer stats on landing only */}
-      {!showForm && (
-        <div className="flex justify-center space-x-12 pb-12 opacity-60">
-          <div className="flex flex-col items-center">
-            <Users size={20} />
-            <span className="text-[9px] mt-1 font-bold uppercase tracking-wider">5k Donors</span>
+      {!showForm ? (
+        <div className="flex flex-col items-center pb-8">
+          <div className="flex justify-center space-x-12 opacity-60 mb-4">
+            <div className="flex flex-col items-center">
+              <Users size={20} />
+              <span className="text-[9px] mt-1 font-bold uppercase tracking-wider">5k Donors</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <ShieldCheck size={20} />
+              <span className="text-[9px] mt-1 font-bold uppercase tracking-wider">Verified</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <Droplets size={20} />
+              <span className="text-[9px] mt-1 font-bold uppercase tracking-wider">Free</span>
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <ShieldCheck size={20} />
-            <span className="text-[9px] mt-1 font-bold uppercase tracking-wider">Verified</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <Droplets size={20} />
-            <span className="text-[9px] mt-1 font-bold uppercase tracking-wider">Free</span>
-          </div>
+          <p className="text-[10px] text-white/40 font-medium italic">Created by Sharath Barua</p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

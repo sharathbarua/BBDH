@@ -143,6 +143,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
         </div>
         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">BBDH Network</p>
         <p className="text-[9px] text-gray-400 mt-1">Safe • Reliable • Direct</p>
+        <p className="text-[10px] text-gray-400 mt-4 font-medium italic opacity-70">Created by Sharath Barua</p>
       </footer>
     </div>
   );
