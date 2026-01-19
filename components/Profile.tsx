@@ -21,11 +21,14 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
     location: { lat: 23.8103, lng: 90.4125, address: '' }
   });
 
-  // If userProfile changes (e.g., from Landing -> Profile), update form
+  // Keep internal form state in sync with external profile state
   useEffect(() => {
     if (userProfile) {
       setFormData(userProfile);
-      setIsEditing(false);
+      // Only close editing mode if the user actually exists (wasn't just created)
+      if (userProfile.fullName) {
+        setIsEditing(false);
+      }
     }
   }, [userProfile]);
 
@@ -35,11 +38,28 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
       alert("Please enter your name and phone number");
       return;
     }
-    onUpdate({
+    const updatedProfile = {
       ...formData as Donor,
       id: userProfile?.id || Date.now().toString()
-    });
+    };
+    onUpdate(updatedProfile);
     setIsEditing(false);
+  };
+
+  const toggleAvailability = () => {
+    if (!userProfile) return;
+    const newVal = !formData.isAvailable;
+    const updatedProfile = { ...userProfile, isAvailable: newVal };
+    setFormData(updatedProfile);
+    onUpdate(updatedProfile);
+  };
+
+  const togglePrivacy = () => {
+    if (!userProfile) return;
+    const newVal = !formData.hidePhone;
+    const updatedProfile = { ...userProfile, hidePhone: newVal };
+    setFormData(updatedProfile);
+    onUpdate(updatedProfile);
   };
 
   return (
@@ -63,7 +83,7 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
             <div className="absolute top-4 right-4">
               <button 
                 onClick={() => setIsEditing(!isEditing)}
-                className="text-red-600 text-sm font-bold bg-white px-3 py-1 rounded-full shadow-sm"
+                className="text-red-600 text-sm font-bold bg-white px-3 py-1 rounded-full shadow-sm active:scale-95 transition-transform"
               >
                 {isEditing ? 'Cancel' : 'Edit'}
               </button>
@@ -79,9 +99,9 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                 <Hash className="text-gray-400 mr-3" size={18} />
                 <input 
                   type="text" 
-                  value={formData.fullName}
+                  value={formData.fullName || ''}
                   onChange={e => setFormData({...formData, fullName: e.target.value})}
-                  className="bg-transparent w-full outline-none text-sm"
+                  className="bg-transparent w-full outline-none text-sm py-2"
                   placeholder="Your full name"
                   required
                 />
@@ -94,9 +114,9 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                 <Hash className="text-gray-400 mr-3" size={18} />
                 <input 
                   type="tel" 
-                  value={formData.phoneNumber}
+                  value={formData.phoneNumber || ''}
                   onChange={e => setFormData({...formData, phoneNumber: e.target.value})}
-                  className="bg-transparent w-full outline-none text-sm"
+                  className="bg-transparent w-full outline-none text-sm py-2"
                   placeholder="017XXXXXXXX"
                   required
                 />
@@ -107,7 +127,7 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Blood Group</label>
                 <select 
-                  className="w-full bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 text-sm outline-none focus:border-red-300"
+                  className="w-full bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 text-sm outline-none focus:border-red-300 appearance-none"
                   value={formData.bloodGroup}
                   onChange={e => setFormData({...formData, bloodGroup: e.target.value as BloodGroup})}
                 >
@@ -119,7 +139,7 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                 <input 
                   type="number"
                   className="w-full bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 text-sm outline-none focus:border-red-300"
-                  value={formData.age}
+                  value={formData.age || ''}
                   min="18"
                   max="65"
                   onChange={e => setFormData({...formData, age: parseInt(e.target.value)})}
@@ -133,9 +153,9 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                 <MapPin className="text-gray-400 mr-3" size={18} />
                 <input 
                   type="text" 
-                  value={formData.location?.address}
+                  value={formData.location?.address || ''}
                   onChange={e => setFormData({...formData, location: {...formData.location!, address: e.target.value}})}
-                  className="bg-transparent w-full outline-none text-sm"
+                  className="bg-transparent w-full outline-none text-sm py-2"
                   placeholder="Street, City"
                 />
               </div>
@@ -149,7 +169,7 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                   type="date" 
                   value={formData.lastDonationDate || ''}
                   onChange={e => setFormData({...formData, lastDonationDate: e.target.value})}
-                  className="bg-transparent w-full outline-none text-sm"
+                  className="bg-transparent w-full outline-none text-sm py-2"
                 />
               </div>
             </div>
@@ -159,7 +179,7 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
               className="w-full bg-red-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center space-x-2 shadow-lg shadow-red-200 active:scale-95 transition-all mt-6"
             >
               <Save size={20} />
-              <span>Complete Profile</span>
+              <span>Save Profile</span>
             </button>
           </form>
         ) : (
@@ -189,8 +209,8 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                   </div>
                 </div>
                 <button 
-                  onClick={() => setFormData({...formData, hidePhone: !formData.hidePhone})}
-                  className={`p-2 rounded-lg ${formData.hidePhone ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-400'}`}
+                  onClick={togglePrivacy}
+                  className={`p-2 rounded-lg transition-colors active:scale-90 ${formData.hidePhone ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-400'}`}
                 >
                   {formData.hidePhone ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -207,12 +227,8 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
                   </div>
                 </div>
                 <div 
-                  onClick={() => {
-                    const newVal = !formData.isAvailable;
-                    setFormData({...formData, isAvailable: newVal});
-                    if (userProfile) onUpdate({...userProfile, isAvailable: newVal});
-                  }}
-                  className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${formData.isAvailable ? 'bg-green-500' : 'bg-gray-300'}`}
+                  onClick={toggleAvailability}
+                  className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors relative ${formData.isAvailable ? 'bg-green-500' : 'bg-gray-300'}`}
                 >
                    <div className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform ${formData.isAvailable ? 'translate-x-6' : ''}`}></div>
                 </div>
@@ -220,7 +236,7 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate }) => {
             </div>
 
             <button 
-              className="w-full text-gray-400 font-bold py-4 flex items-center justify-center space-x-2 border-t border-gray-100 mt-4 active:text-red-600 transition-colors"
+              className="w-full text-gray-400 font-bold py-4 flex items-center justify-center space-x-2 border-t border-gray-100 mt-4 active:text-red-600 transition-colors cursor-pointer"
               onClick={() => {
                 if (confirm("Logout and clear your profile data?")) {
                   localStorage.removeItem('bbdh_profile');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AppTab, Donor } from './types';
 import BottomNav from './components/BottomNav';
 import Home from './components/Home';
@@ -15,6 +15,16 @@ const App: React.FC = () => {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [showLanding, setShowLanding] = useState<boolean>(true);
 
+  // Memoized update function to avoid re-render loops
+  const handleUpdateProfile = useCallback((profile: Donor) => {
+    setUserProfile(profile);
+    setDonors(prev => {
+      const others = prev.filter(d => d.id !== profile.id);
+      return [profile, ...others];
+    });
+    localStorage.setItem('bbdh_profile', JSON.stringify(profile));
+  }, []);
+
   useEffect(() => {
     // Get initial geolocation
     if (navigator.geolocation) {
@@ -25,10 +35,18 @@ const App: React.FC = () => {
             lng: position.coords.longitude
           };
           setUserLocation(loc);
-          // If we have a profile but it has default location, update it
+          
+          // Sync existing profile with new high-accuracy location
           setUserProfile(prev => {
             if (prev && prev.location.lat === 23.8103) {
-                return { ...prev, location: { ...prev.location, ...loc } };
+                const updatedProfile = { ...prev, location: { ...prev.location, ...loc } };
+                // Also update global list and storage
+                setDonors(dPrev => {
+                  const others = dPrev.filter(d => d.id !== updatedProfile.id);
+                  return [updatedProfile, ...others];
+                });
+                localStorage.setItem('bbdh_profile', JSON.stringify(updatedProfile));
+                return updatedProfile;
             }
             return prev;
           });
@@ -54,12 +72,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = (profile: Donor) => {
-    setUserProfile(profile);
-    setDonors(prev => {
-      const others = prev.filter(d => d.id !== profile.id);
-      return [profile, ...others];
-    });
-    localStorage.setItem('bbdh_profile', JSON.stringify(profile));
+    handleUpdateProfile(profile);
     setShowLanding(false);
     setActiveTab('home');
   };
@@ -67,15 +80,6 @@ const App: React.FC = () => {
   const handleSkipLanding = () => {
     setShowLanding(false);
     setActiveTab('home');
-  };
-
-  const handleUpdateProfile = (profile: Donor) => {
-    setUserProfile(profile);
-    setDonors(prev => {
-      const others = prev.filter(d => d.id !== profile.id);
-      return [profile, ...others];
-    });
-    localStorage.setItem('bbdh_profile', JSON.stringify(profile));
   };
 
   if (showLanding && !userProfile) {
