@@ -20,9 +20,17 @@ const App: React.FC = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
+          const loc = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
+          };
+          setUserLocation(loc);
+          // If we have a profile but it has default location, update it
+          setUserProfile(prev => {
+            if (prev && prev.location.lat === 23.8103) {
+                return { ...prev, location: { ...prev.location, ...loc } };
+            }
+            return prev;
           });
         },
         (error) => console.error("Location error:", error.message),
@@ -36,19 +44,21 @@ const App: React.FC = () => {
       const parsed = JSON.parse(savedProfile);
       setUserProfile(parsed);
       setShowLanding(false);
-      // Add the user to the donors list if not already present
+      
+      // Upsert the user to the donors list
       setDonors(prev => {
-        if (!prev.find(d => d.id === parsed.id)) {
-          return [parsed, ...prev];
-        }
-        return prev;
+        const others = prev.filter(d => d.id !== parsed.id);
+        return [parsed, ...others];
       });
     }
   }, []);
 
   const handleLogin = (profile: Donor) => {
     setUserProfile(profile);
-    setDonors(prev => [profile, ...prev]);
+    setDonors(prev => {
+      const others = prev.filter(d => d.id !== profile.id);
+      return [profile, ...others];
+    });
     localStorage.setItem('bbdh_profile', JSON.stringify(profile));
     setShowLanding(false);
     setActiveTab('home');
@@ -61,7 +71,10 @@ const App: React.FC = () => {
 
   const handleUpdateProfile = (profile: Donor) => {
     setUserProfile(profile);
-    setDonors(prev => prev.map(d => d.id === profile.id ? profile : d));
+    setDonors(prev => {
+      const others = prev.filter(d => d.id !== profile.id);
+      return [profile, ...others];
+    });
     localStorage.setItem('bbdh_profile', JSON.stringify(profile));
   };
 
@@ -72,15 +85,15 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <Home userProfile={userProfile} onTabChange={setActiveTab} />;
+        return <Home userProfile={userProfile} onTabChange={setActiveTab} donorsCount={donors.length} />;
       case 'search':
-        return <Search donors={donors} userLocation={userLocation} />;
+        return <Search donors={donors} userLocation={userLocation} currentUser={userProfile} />;
       case 'map':
-        return <MapView donors={donors} userLocation={userLocation} />;
+        return <MapView donors={donors} userLocation={userLocation} currentUser={userProfile} />;
       case 'profile':
         return <Profile userProfile={userProfile} onUpdate={handleUpdateProfile} />;
       default:
-        return <Home userProfile={userProfile} onTabChange={setActiveTab} />;
+        return <Home userProfile={userProfile} onTabChange={setActiveTab} donorsCount={donors.length} />;
     }
   };
 

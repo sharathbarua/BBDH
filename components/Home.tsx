@@ -8,15 +8,17 @@ import {
   Calendar, 
   Droplets, 
   Search as SearchIcon, 
-  Map as MapIcon 
+  Map as MapIcon,
+  Activity
 } from 'lucide-react';
 
 interface HomeProps {
   userProfile: Donor | null;
   onTabChange: (tab: AppTab) => void;
+  donorsCount?: number;
 }
 
-const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
+const Home: React.FC<HomeProps> = ({ userProfile, onTabChange, donorsCount = 0 }) => {
   const calculateEligibility = () => {
     if (!userProfile?.lastDonationDate) return { eligible: true, daysLeft: 0 };
     
@@ -70,6 +72,24 @@ const Home: React.FC<HomeProps> = ({ userProfile, onTabChange }) => {
             </div>
           </div>
           <Droplets size={120} className="absolute -bottom-10 -right-5 opacity-10 text-white rotate-12" />
+        </div>
+      </section>
+
+      {/* Network Stats */}
+      <section className="bg-white rounded-3xl p-5 border border-gray-100 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 relative">
+                <Activity size={24} />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+            </div>
+            <div>
+                <p className="text-xs font-bold text-gray-800 leading-none">Live Hub Status</p>
+                <p className="text-[10px] text-gray-400 mt-1 uppercase font-black tracking-widest">Active Network</p>
+            </div>
+        </div>
+        <div className="text-right">
+            <p className="text-2xl font-black text-red-600 leading-none">{donorsCount}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">Donors</p>
         </div>
       </section>
 

@@ -2,14 +2,15 @@ import React, { useState, useMemo } from 'react';
 import { BloodGroup, Donor } from '../types';
 import { BLOOD_GROUPS, DONATION_INTERVAL_DAYS } from '../constants';
 import { differenceInDays, addDays, format } from 'date-fns';
-import { Phone, MapPin, User, ChevronRight, X, Calendar, ShieldCheck, FilterX } from 'lucide-react';
+import { Phone, MapPin, User, ChevronRight, X, Calendar, ShieldCheck, FilterX, Zap } from 'lucide-react';
 
 interface SearchProps {
   donors: Donor[];
   userLocation: { lat: number; lng: number } | null;
+  currentUser: Donor | null;
 }
 
-const Search: React.FC<SearchProps> = ({ donors, userLocation }) => {
+const Search: React.FC<SearchProps> = ({ donors, userLocation, currentUser }) => {
   const [selectedGroup, setSelectedGroup] = useState<BloodGroup | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDonor, setActiveDonor] = useState<Donor | null>(null);
@@ -28,7 +29,7 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation }) => {
 
   const filteredDonors = useMemo(() => {
     let result = donors.map(donor => {
-      let distance = 0;
+      let distance: number | null = null;
       if (userLocation) {
         distance = calculateDistance(userLocation.lat, userLocation.lng, donor.location.lat, donor.location.lng);
       }
@@ -47,7 +48,13 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation }) => {
       );
     }
 
-    return result.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    // Sort by distance if location is available, otherwise by name
+    return result.sort((a, b) => {
+        if (a.distance !== null && b.distance !== null) {
+            return a.distance - b.distance;
+        }
+        return a.fullName.localeCompare(b.fullName);
+    });
   }, [donors, selectedGroup, searchQuery, userLocation]);
 
   const isEligible = (lastDateStr: string | null) => {
@@ -96,33 +103,44 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation }) => {
         {filteredDonors.length > 0 ? (
           filteredDonors.map((donor) => {
             const available = donor.isAvailable && isEligible(donor.lastDonationDate);
+            const isMe = currentUser?.id === donor.id;
+            
             return (
               <div 
                 key={donor.id} 
                 onClick={() => setActiveDonor(donor)}
-                className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center space-x-4 active:scale-[0.98] transition-all cursor-pointer"
+                className={`bg-white rounded-3xl p-4 shadow-sm border flex items-center space-x-4 active:scale-[0.98] transition-all cursor-pointer ${isMe ? 'border-red-200 bg-red-50/30' : 'border-gray-100'}`}
               >
                 <div className="relative shrink-0">
-                  <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 font-black text-xl shadow-inner">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${isMe ? 'bg-red-600 text-white' : 'bg-red-100 text-red-600'}`}>
                     {donor.bloodGroup}
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${available ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                  {available && (
+                    <div className="absolute -bottom-1 -right-1 flex items-center justify-center">
+                        <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>
+                        <div className="w-4 h-4 rounded-full bg-green-500 absolute animate-ping opacity-40"></div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-gray-800 truncate">{donor.fullName}</h4>
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <h4 className="font-bold text-gray-800 truncate">{donor.fullName}</h4>
+                        {isMe && <span className="text-[8px] bg-red-600 text-white px-1.5 py-0.5 rounded-md font-black shrink-0">YOU</span>}
+                    </div>
                     <span className="text-[10px] text-red-600 font-black shrink-0 bg-red-50 px-2 py-0.5 rounded-full">
-                      {donor.distance ? `${donor.distance.toFixed(1)} KM` : 'NEAR'}
+                      {donor.distance !== null ? `${donor.distance.toFixed(1)} KM` : 'LOC OFF'}
                     </span>
                   </div>
                   <p className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
-                    <MapPin size={10} className="text-red-300" /> {donor.location.address}
+                    <MapPin size={10} className="text-red-300" /> {donor.location.address || 'Unknown Location'}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${available ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'}`}>
-                      {available ? 'ELIBLE NOW' : 'NOT ELIGIBLE'}
+                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-md tracking-tighter ${available ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {available ? 'AVAILABLE NOW' : 'NOT ELIGIBLE'}
                     </span>
+                    {available && <Zap size={10} className="text-yellow-500 fill-yellow-500" />}
                   </div>
                 </div>
                 
@@ -162,20 +180,23 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation }) => {
             </button>
 
             <div className="flex flex-col items-center text-center">
-               <div className="w-24 h-24 bg-red-100 rounded-[35px] flex items-center justify-center text-red-600 font-black text-4xl shadow-inner mb-6 ring-4 ring-white">
+               <div className={`w-24 h-24 rounded-[35px] flex items-center justify-center font-black text-4xl shadow-inner mb-6 ring-4 ring-white ${currentUser?.id === activeDonor.id ? 'bg-red-600 text-white' : 'bg-red-100 text-red-600'}`}>
                  {activeDonor.bloodGroup}
                </div>
-               <h2 className="text-2xl font-black text-gray-800 mb-1">{activeDonor.fullName}</h2>
+               <div className="flex items-center gap-2 mb-1">
+                 <h2 className="text-2xl font-black text-gray-800">{activeDonor.fullName}</h2>
+                 {currentUser?.id === activeDonor.id && <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-black">YOU</span>}
+               </div>
                <p className="text-sm font-medium text-gray-400 flex items-center gap-1">
-                 <MapPin size={14} className="text-red-400" /> {activeDonor.location.address}
+                 <MapPin size={14} className="text-red-400" /> {activeDonor.location.address || 'Unknown'}
                </p>
 
                <div className="grid grid-cols-2 gap-4 w-full mt-8">
-                  <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100">
+                  <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100 text-left">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Age</p>
                     <p className="text-lg font-black text-gray-800">{activeDonor.age} Years</p>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100">
+                  <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100 text-left">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Eligible</p>
                     <p className={`text-lg font-black ${isEligible(activeDonor.lastDonationDate) ? 'text-green-600' : 'text-red-400'}`}>
                       {isEligible(activeDonor.lastDonationDate) ? 'YES' : 'RECOVERY'}
@@ -199,13 +220,17 @@ const Search: React.FC<SearchProps> = ({ donors, userLocation }) => {
 
                <button 
                 onClick={() => {
+                  if (currentUser?.id === activeDonor.id) {
+                    alert("This is your profile.");
+                    return;
+                  }
                   if(!activeDonor.hidePhone) window.location.href = `tel:${activeDonor.phoneNumber}`;
                   else alert("This donor has hidden their contact info. Use official request system.");
                 }}
                 className="w-full bg-red-600 text-white py-5 rounded-[28px] font-black flex items-center justify-center gap-3 text-lg mt-8 shadow-2xl shadow-red-200 active:scale-95 transition-all"
                >
                  <Phone size={22} fill="white" /> 
-                 {activeDonor.hidePhone ? 'Contact Hidden' : 'Call Donor'}
+                 {activeDonor.hidePhone ? 'Contact Hidden' : currentUser?.id === activeDonor.id ? 'Self Profile' : 'Call Donor'}
                </button>
 
                <div className="mt-6 flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
